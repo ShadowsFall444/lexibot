@@ -1,0 +1,21 @@
+{
+  "name": "lexibot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start"
+  },
+  "dependencies": {
+    "react": "18.3.2",
+    "react-native": "0.76.9"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@react-native/babel-preset": "^0.76.0",
+    "@types/react": "^18.3.0",
+    "@types/react-native": "^0.73.0",
+    "typescript": "^5.0.0"
+  }
+}
