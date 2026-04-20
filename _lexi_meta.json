@@ -1,0 +1,6 @@
+{
+  "name": "LexiBot",
+  "type": "apk",
+  "mainFile": "https://github.com/your-username/lexibot/actions/runs/1234567890/jobs/1234567890/artifacts/lexibot.apk",
+  "path": "/home/runner/workspace/lexi-projects/lexibot"
+}
