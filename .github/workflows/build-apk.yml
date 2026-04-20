@@ -1,0 +1,68 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install React Native CLI
+        run: npm install -g @react-native-community/cli@15
+
+      - name: Scaffold bare React Native project
+        run: |
+          npx @react-native-community/cli@15 init LeximBuild \
+            --version 0.76.9 \
+            --skip-install \
+            --directory LeximBuild
+          echo "Scaffold complete"
+
+      - name: Copy app source into project
+        run: |
+          for f in *.tsx *.ts *.js *.jsx; do
+            [ -f "\$f" ] && cp "\$f" LeximBuild/ && echo "Copied \$f" || true
+          done
+          for d in src components screens hooks lib assets images; do
+            [ -d "\$d" ] && cp -r "\$d" LeximBuild/ && echo "Copied dir \$d" || true
+          done
+
+      - name: Install dependencies
+        working-directory: LeximBuild
+        run: npm install --legacy-peer-deps
+
+      - name: Make gradlew executable
+        working-directory: LeximBuild/android
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        working-directory: LeximBuild/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexibot-debug-apk
+          path: LeximBuild/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error
