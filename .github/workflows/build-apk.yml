@@ -40,11 +40,19 @@ jobs:
 
       - name: Copy app source into project
         run: |
-          for f in *.tsx *.ts *.js *.jsx; do
-            [ -f "\$f" ] && cp "\$f" LeximBuild/ && echo "Copied \$f" || true
+          # Copy top-level JS/TS and config files so the scaffolded project uses the repo app code
+          for f in index.js package.json app.json babel.config.js metro.config.js; do
+            [ -f "$f" ] && cp "$f" LeximBuild/ && echo "Copied $f" || true
           done
-          for d in src components screens hooks lib assets images; do
-            [ -d "\$d" ] && cp -r "\$d" LeximBuild/ && echo "Copied dir \$d" || true
+
+          # Copy source files
+          for f in *.tsx *.ts *.js *.jsx; do
+            [ -f "$f" ] && cp "$f" LeximBuild/ && echo "Copied $f" || true
+          done
+
+          # Copy common directories including native android/ios if present
+          for d in src components screens hooks lib assets images android ios; do
+            [ -d "$d" ] && cp -r "$d" LeximBuild/ && echo "Copied dir $d" || true
           done
 
       - name: Install dependencies
@@ -53,16 +61,21 @@ jobs:
 
       - name: Make gradlew executable
         working-directory: LeximBuild/android
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
 
       - name: Build debug APK
         working-directory: LeximBuild/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Show build outputs
+        run: |
+          echo "Listing build outputs for LeximBuild/android/app/build/outputs:"
+          ls -R LeximBuild/android/app/build/outputs || true
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: lexibot-debug-apk
-          path: LeximBuild/android/app/build/outputs/apk/debug/app-debug.apk
+          path: LeximBuild/android/app/build/outputs/**/*.apk
           retention-days: 30
           if-no-files-found: error
